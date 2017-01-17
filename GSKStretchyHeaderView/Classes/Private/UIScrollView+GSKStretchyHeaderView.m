@@ -30,7 +30,10 @@
 @implementation UIScrollView (GSKStretchyHeaderView)
 
 - (void)gsk_arrangeStretchyHeaderView:(GSKStretchyHeaderView *)headerView {
-    NSAssert(headerView.superview == self, @"The provided header view must be a subview of %@", self);
+    if (headerView.observationTargetProvider == nil) {
+        NSAssert(headerView.superview == self, @"The provided header view must be a subview of %@", self);
+    }
+
     NSUInteger stretchyHeaderViewIndex = [self.subviews indexOfObjectIdenticalTo:headerView];
     NSUInteger stretchyHeaderViewNewIndex = stretchyHeaderViewIndex;
     for (NSUInteger i = stretchyHeaderViewIndex + 1; i < self.subviews.count; ++i) {
@@ -52,7 +55,11 @@
     // First of all, move the header view to the top of the visible part of the scroll view,
     // update its width if needed
     CGRect headerFrame = headerView.frame;
-    headerFrame.origin.y = contentOffset.y;
+    
+    if (headerView.superview == self) {
+        headerFrame.origin.y = contentOffset.y;
+    }
+
     if (CGRectGetWidth(headerFrame) != CGRectGetWidth(self.bounds)) {
         headerFrame.size.width = CGRectGetWidth(self.bounds);
     }

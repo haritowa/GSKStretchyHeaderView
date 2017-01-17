@@ -28,7 +28,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D4B2CB9D0510660F61E76886D25D9CAC"
+               BlueprintIdentifier = "CD71ED72EACA0156F0B96DDE230F2138"
                BuildableName = "GSKStretchyHeaderView.framework"
                BlueprintName = "GSKStretchyHeaderView"
                ReferencedContainer = "container:Example/Pods/Pods.xcodeproj">

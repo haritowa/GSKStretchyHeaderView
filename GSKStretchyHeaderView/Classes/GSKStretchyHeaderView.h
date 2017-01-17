@@ -106,6 +106,13 @@ typedef NS_ENUM(NSUInteger, GSKStretchyHeaderViewExpansionMode) {
 @property(nonatomic) BOOL manageScrollViewInsets;
 
 /**
+ *  Indicates if the header view changes the scrollView offset automatically when observation target changed.
+ *  Changes target scrollView offset to preserve header stretchFactor. Scroll target scrollView to top if header is expanded.
+ *  @warning Do nothing for GSKStretchyHeaderViewExpansionModeImmediate expansion mode.
+ */
+@property(nonatomic) BOOL manageScrollViewOffset;
+
+/**
  *  Specifies wether the contentView height shrinks when scrolling up. Default is YES.
  */
 @property(nonatomic) IBInspectable BOOL contentShrinks;
@@ -138,6 +145,23 @@ typedef NS_ENUM(NSUInteger, GSKStretchyHeaderViewExpansionMode) {
 
 @end
 
+@protocol GSKStretchyHeaderObservationTargetProvider <NSObject>
+
+/**
+ *  Called when stretchy header looks for new observation target.
+ *  @return scrollView to observe.
+ */
+- (UIScrollView * _Nullable) getTargetForHeader: (GSKStretchyHeaderView * _Nonnull)header;
+
+/**
+ *  Called when stretchy header view superview changed.
+ *  @param scrollView New superview. Nil if superview is not UIScrollView descendant.
+ *  @return True if header should stop observe previous scrollview offset changes and switch to superview.
+ */
+- (BOOL) shouldReplaceTargetWithScrollView: (UIScrollView * _Nullable) scrollView;
+
+@end
+
 
 @interface GSKStretchyHeaderView (StretchFactor)
 
@@ -154,10 +178,25 @@ typedef NS_ENUM(NSUInteger, GSKStretchyHeaderViewExpansionMode) {
 
 /**
  *  This method will be called every time the stretchFactor changes.
- *  Can be overriden by subclasses to adjust subviews depending on the value of the stretchFactor.
+ *  Can be overridden by subclasses to adjust subviews depending on the value of the stretchFactor.
  *  @param stretchFactor The new stretchFactor
  */
 - (void)didChangeStretchFactor:(CGFloat)stretchFactor;
+
+@end
+
+@interface GSKStretchyHeaderView (ObservationTargetProvider)
+
+/**
+ *  The observation target provider will be asked for scrollview to observe
+ */
+@property (nonatomic, weak) id<GSKStretchyHeaderObservationTargetProvider> observationTargetProvider;
+
+/**
+ *  Force header to reset observation target. New target will be chosen from observationTargetProvider or superview.
+ *  Do nothing if observationTargetProvider is nil and superview is not UIScrollView subclass
+ */
+- (void)resetObservationTarget;
 
 @end
 

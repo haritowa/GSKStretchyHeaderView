@@ -33,6 +33,7 @@ static const CGFloat kNibDefaultMaximumContentHeight = 240;
 @property (nonatomic, weak) UIScrollView *scrollView;
 @property (nonatomic) BOOL observingScrollView;
 @property (nonatomic, weak) id<GSKStretchyHeaderViewStretchDelegate> stretchDelegate;
+@property (nonatomic, weak) id<GSKStretchyHeaderObservationTargetProvider> observationTargetProvider;
 @property (nonatomic) CGFloat stretchFactor;
 @end
 
@@ -113,7 +114,25 @@ static const CGFloat kNibDefaultMaximumContentHeight = 240;
     }];
 }
 
-#pragma mark - Overriden methods
+- (void)resetObservationTarget {
+    if (_observationTargetProvider != nil) {
+        [self setNewObservationTarget:[_observationTargetProvider getTargetForHeader: self]];
+    } else if ([self.superview isKindOfClass:[UIScrollView class]]) {
+        [self setNewObservationTarget:(UIScrollView *) self.superview];
+    }
+}
+
+- (void)setNewObservationTarget:(nullable UIScrollView *)newScrollView {
+    [self stopObservingScrollView];
+    
+    self.scrollView = newScrollView;
+    [self observeScrollViewIfPossible];
+
+    [self updateContentOffsetIfNeeded];
+    [self setupScrollViewInsetsIfNeeded];
+}
+
+#pragma mark - Overridden methods
 
 - (void)awakeFromNib {
     [super awakeFromNib];
@@ -138,20 +157,24 @@ static const CGFloat kNibDefaultMaximumContentHeight = 240;
 
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
-    
+
+    BOOL isSuperKindOfScrollView = [self.superview isKindOfClass:[UIScrollView class]];
+    UIScrollView *superScrollView = (UIScrollView *) (isSuperKindOfScrollView ? self.superview : nil);
+
+    if (self.observationTargetProvider != nil && ![self.observationTargetProvider shouldReplaceTargetWithScrollView: superScrollView]) {
+        return;
+    }
+
     if (self.superview != self.scrollView) {
         [self stopObservingScrollView];
         self.scrollView = nil;
     }
-    
-    if (![self.superview isKindOfClass:[UIScrollView class]]) {
+
+    if (!isSuperKindOfScrollView) {
         return;
     }
-    
-    self.scrollView = (UIScrollView *)self.superview;
-    [self observeScrollViewIfPossible];
-    
-    [self setupScrollViewInsetsIfNeeded];
+
+    [self setNewObservationTarget:superScrollView];
 }
 
 - (void)observeScrollViewIfPossible {
@@ -217,6 +240,21 @@ static const CGFloat kNibDefaultMaximumContentHeight = 240;
 
 - (CGFloat)minimumHeight {
     return self.minimumContentHeight + self.verticalInset;
+}
+
+- (void)updateContentOffsetIfNeeded {
+    if(self.scrollView && self.manageScrollViewOffset && self.expansionMode == GSKStretchyHeaderViewExpansionModeTopOnly) {
+        CGFloat currentHeight = self.frame.size.height;
+        CGFloat currentOffset = self.scrollView.contentOffset.y;
+        CGFloat newOffset = -currentHeight;
+        
+        if (currentHeight <= self.minimumContentHeight) {
+            newOffset = MAX(newOffset, currentOffset);
+        }
+        
+        self.scrollView.contentOffset = CGPointMake(self.scrollView.contentOffset.x,
+                                                    newOffset);
+    }
 }
 
 - (void)setupScrollViewInsetsIfNeeded {

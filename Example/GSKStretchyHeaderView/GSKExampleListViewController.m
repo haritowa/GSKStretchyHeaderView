@@ -58,8 +58,12 @@
 
     GSKExampleData *visibleHeaders = [GSKExampleData dataWithTitle:@"Visible section headers"
                                                viewControllerClass:[GSKVisibleSectionHeadersViewController class]];
+    
+    GSKExampleData *severalScrollViews = [GSKExampleData dataWithTitle:@"Several scrollViews"
+                                               viewControllerClass:[SeveralScrollViewsViewController class]];
+    
 
-    self.exampleDatas = @[airbnb, twitter, spoty, scalableLabel, firstExample, nib, tabs, navBar, tabBarViewController, visibleHeaders];
+    self.exampleDatas = @[airbnb, twitter, spoty, scalableLabel, firstExample, nib, tabs, navBar, tabBarViewController, visibleHeaders, severalScrollViews];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
