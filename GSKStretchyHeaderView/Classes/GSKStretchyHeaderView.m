@@ -127,9 +127,10 @@ static const CGFloat kNibDefaultMaximumContentHeight = 240;
     
     self.scrollView = newScrollView;
     [self observeScrollViewIfPossible];
-
-    [self updateContentOffsetIfNeeded];
+    
+    CGFloat currentHeight = self.frame.size.height;
     [self setupScrollViewInsetsIfNeeded];
+    [self updateContentOffsetIfNeeded: currentHeight];
 }
 
 #pragma mark - Overridden methods
@@ -242,13 +243,12 @@ static const CGFloat kNibDefaultMaximumContentHeight = 240;
     return self.minimumContentHeight + self.verticalInset;
 }
 
-- (void)updateContentOffsetIfNeeded {
+- (void)updateContentOffsetIfNeeded: (CGFloat) targetHeaderHeight {
     if(self.scrollView && self.manageScrollViewOffset && self.expansionMode == GSKStretchyHeaderViewExpansionModeTopOnly) {
-        CGFloat currentHeight = self.frame.size.height;
         CGFloat currentOffset = self.scrollView.contentOffset.y;
-        CGFloat newOffset = -currentHeight;
+        CGFloat newOffset = -targetHeaderHeight;
         
-        if (currentHeight <= self.minimumContentHeight) {
+        if (targetHeaderHeight <= self.minimumContentHeight) {
             newOffset = MAX(newOffset, currentOffset);
         }
         
