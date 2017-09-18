@@ -31,7 +31,7 @@
 
 - (void)gsk_arrangeStretchyHeaderView:(GSKStretchyHeaderView *)headerView {
     if (headerView.observationTargetProvider == nil) {
-        NSAssert(headerView.superview == self, @"The provided header view must be a subview of %@", self);
+        return;
     }
 
     NSUInteger stretchyHeaderViewIndex = [self.subviews indexOfObjectIdenticalTo:headerView];
@@ -73,10 +73,12 @@
     CGFloat headerViewHeight = CGRectGetHeight(headerView.bounds);
     switch (headerView.expansionMode) {
         case GSKStretchyHeaderViewExpansionModeTopOnly: {
-            if (contentOffset.y + headerView.maximumHeight < 0) { // bigger than default
-                headerViewHeight = -contentOffset.y;
+            CGFloat topInsetDiff = self.contentInset.top - headerView.maximumHeight;
+            
+            if (contentOffset.y + headerView.maximumHeight + topInsetDiff < 0) { // bigger than default
+                headerViewHeight = -contentOffset.y - topInsetDiff;
             } else {
-                headerViewHeight = MIN(headerView.maximumHeight, MAX(-contentOffset.y, headerView.minimumHeight));
+                headerViewHeight = MIN(headerView.maximumHeight, MAX(-contentOffset.y - topInsetDiff, headerView.minimumHeight));
             }
             break;
         }
